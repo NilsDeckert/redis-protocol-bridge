@@ -1,4 +1,4 @@
-# Redis Protocol POC
+# Redis Protocol Bridge
 
 This is a short proof of concept showing how we can use the redis-protocol crate
 to provide an API endpoint a redis client can connect to.
