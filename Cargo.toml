@@ -1,0 +1,24 @@
+[package]
+name = "redis-protocol-poc"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = {version = "1.41.1", features = [
+    "rt-multi-thread",
+    "macros",
+    "net",
+    "io-util",
+    "sync",
+]}
+redis-protocol = { version = "6.0.0", features = ["bytes"] }
+log = "0.4.22"
+env_logger = "0.11.5"
+
+[profile.release]
+codegen-units = 1
+lto = "fat"
+
+[profile.dev]
+opt-level = 2
+debug = true
