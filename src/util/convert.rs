@@ -14,6 +14,15 @@ impl AsFrame for i64 {
     }
 }
 
+impl AsFrame for usize {
+    fn as_frame(&self) -> OwnedFrame {
+        OwnedFrame::BigNumber {
+            data: self.to_ne_bytes().to_vec(),
+            attributes: None
+        }
+    }
+}
+
 impl AsFrame for String {
     fn as_frame(&self) -> OwnedFrame {
         OwnedFrame::BlobString {
