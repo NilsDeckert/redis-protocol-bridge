@@ -12,7 +12,7 @@ use std::collections::HashMap;
 use std::env;
 use redis_protocol::resp3::types::*;
 use redis_protocol::resp3::{decode, encode};
-use redis_protocol_poc::parse_owned_frame;
+use redis_protocol_bridge::parse_owned_frame;
 use crate::commands::parse::Request;
 
 /*##########################################################*/
