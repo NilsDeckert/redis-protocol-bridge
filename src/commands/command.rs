@@ -10,7 +10,7 @@ use crate::util::convert::AsFrame;
 /** Encapsulation for COMMAND subcommands */
 #[derive(Debug)]
 pub enum Command {
-    /** `COMAMND` */
+    /** `COMMAND` */
     CMD,
     /** `COMMAND COUNT` */
     COUNT,
