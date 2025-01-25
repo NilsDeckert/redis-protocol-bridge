@@ -9,7 +9,7 @@ use redis_protocol::resp3::{decode, encode, types::Resp3Frame};
 use serde::de;
 
 #[cfg(feature = "serde")]
-pub struct SerializableFrame(OwnedFrame);
+pub struct SerializableFrame(pub OwnedFrame);
 
 #[cfg(feature = "serde")]
 impl Serialize for SerializableFrame {
