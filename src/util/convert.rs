@@ -1,8 +1,62 @@
 use std::collections::HashMap;
 use redis_protocol::resp3::types::OwnedFrame;
 
+#[cfg(feature = "serde")]
+use serde::{Serialize, Serializer, Deserialize, Deserializer};
+#[cfg(feature = "serde")]
+use redis_protocol::resp3::{decode, encode, types::Resp3Frame};
+#[cfg(feature = "serde")]
+use serde::de;
+
+#[cfg(feature = "serde")]
+pub struct SerializableFrame(OwnedFrame);
+
+#[cfg(feature = "serde")]
+impl Serialize for SerializableFrame {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer
+    {
+        let mut encoded: Vec<u8> = vec![0u8; self.0.encode_len(false)];
+        encode::complete::encode(
+            &mut encoded,
+            &self.0,
+            false).expect("Failed to encode");
+        serializer.serialize_bytes(&*encoded)
+
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> Deserialize<'de> for SerializableFrame {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        // First, deserialize the incoming bytes
+        let bytes: Vec<u8> = Deserialize::deserialize(deserializer)?;
+
+        // Use the decode function from redis_protocol to parse the frame
+        if let Ok(decoded) = decode::complete::decode(&bytes) {
+            match decoded {
+                Some((frame, _)) => Ok(SerializableFrame(frame)),
+                None => Err(de::Error::custom("Decoded yielded nothing")),
+            }
+        } else {
+           Err(de::Error::custom("Failed to decode"))
+        }
+    }
+}
+
 pub trait AsFrame {
     fn as_frame(&self) -> OwnedFrame;
+}
+
+#[cfg(feature = "serde")]
+impl AsFrame for SerializableFrame {
+    fn as_frame(&self) -> OwnedFrame {
+        self.0.clone()
+    }
 }
 
 impl AsFrame for i64 {
@@ -86,6 +140,33 @@ impl<T: AsFrame + Clone> AsFrame for Vec<(T, T)> {
 
         intermediate.as_frame()
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    #[cfg(feature = "serde")]
+    fn test_serialize_deserialize_array() {
+        // Create an array frame
+        let frame = OwnedFrame::SimpleString {
+            data: "Hello World".into(),
+            attributes: None,
+        };
+
+        let serializable = SerializableFrame(frame.clone());
+
+        let serialized = bincode::serialize(&serializable)
+            .expect("Failed to serialize SerializableFrame");
+
+        let deserialized: SerializableFrame = bincode::deserialize(&serialized)
+            .expect("Failed to deserialize SerializableFrame");
+
+        // Check
+        assert_eq!(deserialized.0, frame);
+    }
+
 }
 
 /*

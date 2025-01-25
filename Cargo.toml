@@ -3,6 +3,9 @@ name = "redis-protocol-bridge"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+serde=["dep:serde", "dep:bincode"]
+
 [dependencies]
 tokio = {version = "1.41.1", features = [
     "rt-multi-thread",
@@ -14,6 +17,8 @@ tokio = {version = "1.41.1", features = [
 redis-protocol = { version = "6.0.0", features = ["bytes"] }
 log = "0.4.22"
 env_logger = "0.11.5"
+serde = { version = "1.0", features = ["derive"], optional = true }
+bincode = { version = "1.3.3", optional = true }
 
 [profile.release]
 codegen-units = 1

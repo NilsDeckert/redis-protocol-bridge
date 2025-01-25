@@ -5,6 +5,7 @@ use crate::commands::info::Info;
 
 /// Wrapper for supported commands
 #[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[allow(dead_code)]
 pub enum Request {
     HELLO{ version: Option<String>, clientname: Option<String>, auth: Option<(String, String)> },
@@ -13,7 +14,7 @@ pub enum Request {
     COMMAND(Command),
     INFO(Info),
     PING(String),
-    SELECT(usize)
+    SELECT(u64)
 }
 
 /// Parse incoming commands
@@ -42,5 +43,30 @@ pub fn parse(mut query: Vec<String>) -> Result<Request, RedisProtocolError> {
             RedisProtocolErrorKind::Parse,
             "Empty query"
         ))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn serialize_hello() {
+        let hello = Request::HELLO {
+            version:    Some(String::from("3")),
+            clientname: Some(String::from("my_client")),
+            auth:       None
+        };
+        let serialized = bincode::serialize(&hello).unwrap();
+        let deserialized = bincode::deserialize(&serialized).unwrap();
+
+        if let Request::HELLO { version, clientname, auth } = deserialized {
+            assert_eq!(version, Some(String::from("3")));
+            assert_eq!(clientname, Some(String::from("my_client")));
+            assert_eq!(auth, None);
+        } else {
+            panic!("deserialized wrong variant")
+        }
     }
 }
