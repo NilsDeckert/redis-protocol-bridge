@@ -3,12 +3,14 @@
 Open a tcp port and wait for connections:
 
 ```rust
+use tokio::net::{TcpListener, TcpStream};
+use core::net::SocketAddr;
+
+# fn handle_client(tcp_stream: TcpStream, socket_addr: SocketAddr) {}
+
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
     let listener = TcpListener::bind("127.0.0.1:6380").await?;
-    Builder::new()
-        .filter(None, LevelFilter::Debug)
-        .init();
 
     loop {
         let (tcp_stream, socket_addr) = listener.accept().await?;
@@ -23,6 +25,10 @@ Read the incoming data, pass it to [`parse_owned_frame`] and then handle the com
 using `handle_command`: 
 
 ```rust
+use tokio::net::{TcpListener, TcpStream};
+use core::net::SocketAddr;
+use std::collections::HashMap;
+
 async fn handle_client(mut stream: TcpStream, addr: SocketAddr) {
     info!("Incoming connection from: {}", addr);
     let mut map: HashMap<String, String> = HashMap::new();
@@ -70,10 +76,10 @@ fn handle_command(query: Vec<String>, map: &mut HashMap<String, String>) -> Vec<
             Request::SELECT  { .. } => select::default_handle(request)
         };
 
-        reply = r.unwrap_or_else(|err| 
+        reply = r.unwrap_or_else(|err|
             OwnedFrame::SimpleError {
                 data: err.details().to_string(),
-                attributes: None 
+                attributes: None
             }
         )
     } else {
