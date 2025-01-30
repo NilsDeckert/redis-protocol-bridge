@@ -6,9 +6,13 @@ use serde::{Serialize, Serializer, Deserialize, Deserializer};
 #[cfg(feature = "serde")]
 use redis_protocol::resp3::{decode, encode, types::Resp3Frame};
 #[cfg(feature = "serde")]
-use serde::de;
+use serde::de::{Error, Visitor};
+#[cfg(feature = "serde")]
+use std::fmt::Formatter;
 
 #[cfg(feature = "serde")]
+/// Wrapper around [`OwnedFrame`] that supports serialization and
+/// deserialization using [`serde`]
 pub struct SerializableFrame(pub OwnedFrame);
 
 #[cfg(feature = "serde")]
@@ -28,23 +32,38 @@ impl Serialize for SerializableFrame {
 }
 
 #[cfg(feature = "serde")]
+struct FrameVisitor;
+
+#[cfg(feature = "serde")]
+impl <'de> Visitor<'de> for FrameVisitor {
+    type Value = SerializableFrame;
+
+    fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
+        formatter.write_str("a redis OwnedFrame encoded by redis_protocol::resp3::encode::complete")
+    }
+
+    fn visit_bytes<E>(self, v: &[u8]) -> Result<Self::Value, E>
+    where
+        E: Error
+    {
+        let bytes = decode::complete::decode(&v);
+        if let Ok(Some((frame, _))) = bytes {
+            Ok(SerializableFrame(frame))
+        } else {
+            Err(E::custom("Failed to deserialize"))
+        }
+    }
+}
+
+#[cfg(feature = "serde")]
 impl<'de> Deserialize<'de> for SerializableFrame {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
-        // First, deserialize the incoming bytes
-        let bytes: Vec<u8> = Deserialize::deserialize(deserializer)?;
 
-        // Use the decode function from redis_protocol to parse the frame
-        if let Ok(decoded) = decode::complete::decode(&bytes) {
-            match decoded {
-                Some((frame, _)) => Ok(SerializableFrame(frame)),
-                None => Err(de::Error::custom("Decoded yielded nothing")),
-            }
-        } else {
-           Err(de::Error::custom("Failed to decode"))
-        }
+        deserializer.deserialize_bytes(FrameVisitor)
+
     }
 }
 
@@ -148,7 +167,7 @@ mod tests {
 
     #[test]
     #[cfg(feature = "serde")]
-    fn test_serialize_deserialize_array() {
+    fn test_serialize_deserialize() {
         // Create an array frame
         let frame = OwnedFrame::SimpleString {
             data: "Hello World".into(),
@@ -166,7 +185,7 @@ mod tests {
         // Check
         assert_eq!(deserialized.0, frame);
     }
-
+    
 }
 
 /*

@@ -69,4 +69,25 @@ mod tests {
             panic!("deserialized wrong variant")
         }
     }
+    
+    #[cfg(feature = "serde")]
+    #[test]
+    fn serialize_command_docs() {
+        let cmd = Command::DOCS(vec![String::from("HELLO")]);
+        let req = Request::COMMAND(cmd);
+        
+        let serialized   = bincode::serialize(&req).expect("Serialization failed");
+        let deserialized = bincode::deserialize(&serialized).expect("Deserialization failed");
+
+        if let Request::COMMAND(cmd) = deserialized {
+            if let Command::DOCS(vec) = cmd {
+                assert_eq!(vec[0], String::from("HELLO"));
+            } else {
+                panic!("wrong variant")
+            }
+        } else {
+            panic!("deserialized wrong variant")
+        }
+    }
+    
 }
