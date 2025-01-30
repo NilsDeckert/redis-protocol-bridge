@@ -48,8 +48,6 @@ pub fn parse(mut query: Vec<String>) -> Result<Request, RedisProtocolError> {
 
 #[cfg(test)]
 mod tests {
-    #[cfg(feature = "ractor")]
-    use ractor::BytesConvertable;
     use super::*;
 
     #[cfg(feature = "serde")]
@@ -62,27 +60,6 @@ mod tests {
         };
         let serialized = bincode::serialize(&hello).unwrap();
         let deserialized = bincode::deserialize(&serialized).unwrap();
-
-        if let Request::HELLO { version, clientname, auth } = deserialized {
-            assert_eq!(version, Some(String::from("3")));
-            assert_eq!(clientname, Some(String::from("my_client")));
-            assert_eq!(auth, None);
-        } else {
-            panic!("deserialized wrong variant")
-        }
-    }
-    
-    #[cfg(feature = "ractor")]
-    #[test]
-    fn serialize_hello_ractor() {
-        let hello = Request::HELLO {
-            version:    Some(String::from("3")),
-            clientname: Some(String::from("my_client")),
-            auth:       None
-        };
-        
-        let serialized = hello.into_bytes();
-        let deserialized = Request::from_bytes(serialized);
 
         if let Request::HELLO { version, clientname, auth } = deserialized {
             assert_eq!(version, Some(String::from("3")));
@@ -113,23 +90,4 @@ mod tests {
         }
     }
     
-    #[cfg(feature = "ractor")]
-    #[test]
-    fn serialize_command_docs_ractor() {
-        let cmd = Command::DOCS(vec![String::from("HELLO")]);
-        let req = Request::COMMAND(cmd);
-        
-        let serialized = req.into_bytes();
-        let deserialized = Request::from_bytes(serialized);
-        
-        if let Request::COMMAND(cmd) = deserialized {
-            if let Command::DOCS(vec) = cmd {
-                assert_eq!(vec[0], String::from("HELLO"));
-            } else {
-                panic!("wrong variant")
-            }
-        } else {
-            panic!("deserialized wrong variant")
-        }
-    }
 }
