@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::fmt::Formatter;
 use redis_protocol::resp3::types::OwnedFrame;
 
 #[cfg(feature = "serde")]
@@ -7,10 +6,13 @@ use serde::{Serialize, Serializer, Deserialize, Deserializer};
 #[cfg(feature = "serde")]
 use redis_protocol::resp3::{decode, encode, types::Resp3Frame};
 #[cfg(feature = "serde")]
-use serde::de;
 use serde::de::{Error, Visitor};
+#[cfg(feature = "serde")]
+use std::fmt::Formatter;
 
 #[cfg(feature = "serde")]
+/// Wrapper around [`OwnedFrame`] that supports serialization and
+/// deserialization using [`serde`]
 pub struct SerializableFrame(pub OwnedFrame);
 
 #[cfg(feature = "serde")]
@@ -29,8 +31,10 @@ impl Serialize for SerializableFrame {
     }
 }
 
+#[cfg(feature = "serde")]
 struct FrameVisitor;
 
+#[cfg(feature = "serde")]
 impl <'de> Visitor<'de> for FrameVisitor {
     type Value = SerializableFrame;
 
@@ -60,20 +64,7 @@ impl<'de> Deserialize<'de> for SerializableFrame {
 
         deserializer.deserialize_bytes(FrameVisitor)
 
-/*        // First, deserialize the incoming bytes
-        let bytes: Vec<u8> = Deserialize::deserialize(deserializer)?;
-        deserializer.deserialize_bytes()
-
-        // Use the decode function from redis_protocol to parse the frame
-        if let Ok(decoded) = decode::complete::decode(&bytes) {
-            match decoded {
-                Some((frame, _)) => Ok(SerializableFrame(frame)),
-                None => Err(de::Error::custom("Decoded yielded nothing")),
-            }
-        } else {
-           Err(de::Error::custom("Failed to decode"))
-        }
-*/    }
+    }
 }
 
 pub trait AsFrame {
