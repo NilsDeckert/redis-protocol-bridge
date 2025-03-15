@@ -36,7 +36,8 @@ fn handle_command(query: Vec<String>, map: &mut HashMap<String, String>) -> Vec<
                 Request::COMMAND { .. } => command::default_handle(request),
                 Request::INFO { .. } => info::default_handle(request),
                 Request::PING { .. } => ping::default_handle(request),
-                Request::SELECT { .. } => select::default_handle(request)
+                Request::SELECT { .. } => select::default_handle(request),
+                Request::QUIT { .. } => quit::default_handle(request),
             };
 
             r.unwrap_or_else(|err|

@@ -14,7 +14,8 @@ pub enum Request {
     COMMAND(Command),
     INFO(Info),
     PING(String),
-    SELECT(u64)
+    SELECT(u64),
+    QUIT
 }
 
 /// Parse incoming commands
@@ -32,6 +33,7 @@ pub fn parse(mut query: Vec<String>) -> Result<Request, RedisProtocolError> {
             "INFO" => info::parse(args),
             "PING" => ping::parse(args),
             "SELECT" => select::parse(args),
+            "QUIT" => quit::parse(args),
             
             _ => Err(RedisProtocolError::new(
                 RedisProtocolErrorKind::Parse,

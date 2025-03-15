@@ -32,3 +32,6 @@ pub mod ping;
 
 /// SELECT
 pub mod select;
+
+/// QUIT
+pub mod quit;
