@@ -68,6 +68,18 @@ impl<'de> Deserialize<'de> for SerializableFrame {
     }
 }
 
+impl From<OwnedFrame> for SerializableFrame {
+    fn from(frame: OwnedFrame) -> Self {
+        SerializableFrame(frame)
+    }
+}
+
+impl From<SerializableFrame> for OwnedFrame {
+    fn from(frame: SerializableFrame) -> Self {
+        frame.0
+    }
+}
+
 pub trait AsFrame {
     fn as_frame(&self) -> OwnedFrame;
 }
