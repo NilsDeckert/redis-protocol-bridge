@@ -14,7 +14,11 @@ pub fn parse(args: Vec<String>) -> Result<Request, RedisProtocolError>{
 /// Return passed string.
 pub fn default_handle(args: Request) -> Result<OwnedFrame, RedisProtocolError> {
     if let Request::PING(message) = args {
-        Ok(message.as_frame())
+        if message == "" {
+            Ok("PONG".as_frame())
+        } else {
+            Ok(message.as_frame())
+        }
     } else {
         panic!("Expected enum variant PING, but got {:?}", args.type_id())
     }
