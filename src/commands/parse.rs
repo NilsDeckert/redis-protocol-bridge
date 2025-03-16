@@ -4,7 +4,7 @@ use crate::commands::{*};
 use crate::commands::info::Info;
 
 /// Wrapper for supported commands
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[allow(dead_code)]
 pub enum Request {

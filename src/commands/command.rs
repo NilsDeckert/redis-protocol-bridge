@@ -8,7 +8,7 @@ use crate::commands::parse::Request::COMMAND;
 use crate::util::convert::AsFrame;
 
 /** Encapsulation for COMMAND subcommands */
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Command {
     /** `COMMAND` */

@@ -9,7 +9,7 @@ use crate::util::convert::AsFrame;
 /// 
 /// For info on sections and their meanings, see
 /// [Redis Docs](https://redis.io/docs/latest/commands/info/).
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Info {
     /** Return only the default set of sections. True if no parameters were passed.
