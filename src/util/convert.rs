@@ -9,6 +9,7 @@ use redis_protocol::resp3::{decode, encode, types::Resp3Frame};
 use serde::de::{Error, Visitor};
 #[cfg(feature = "serde")]
 use std::fmt::Formatter;
+use redis_protocol::error::RedisProtocolError;
 
 #[cfg(feature = "serde")]
 /// Wrapper around [`OwnedFrame`] that supports serialization and
@@ -109,6 +110,15 @@ impl AsFrame for str {
     fn as_frame(&self) -> OwnedFrame {
         OwnedFrame::BlobString {
             data: Vec::from(self),
+            attributes: None,
+        }
+    }
+}
+
+impl AsFrame for RedisProtocolError {
+    fn as_frame(&self) -> OwnedFrame {
+        OwnedFrame::SimpleError {
+            data: self.to_string(),
             attributes: None,
         }
     }
