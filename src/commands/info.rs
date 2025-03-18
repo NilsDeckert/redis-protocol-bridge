@@ -4,6 +4,7 @@ use redis_protocol::error::{RedisProtocolError, RedisProtocolErrorKind};
 use redis_protocol::resp3::types::OwnedFrame;
 use std::any::Any;
 use std::collections::HashMap;
+use std::ops::{BitOr, BitOrAssign};
 
 /// A struct containing all possible parameters for the INFO command
 ///
@@ -119,6 +120,50 @@ impl Info {
     }
 }
 
+impl BitOr for Info {
+    type Output = Self;
+    
+    fn bitor(self, rhs: Self) -> Self {
+        let mut ret = self.clone();
+        ret.default = rhs.default;
+        ret.server = rhs.server;
+        ret.clients = rhs.clients;
+        ret.memory = rhs.memory;
+        ret.persistence = rhs.persistence;
+        ret.stats = rhs.stats;
+        ret.replication |= rhs.replication;
+        ret.cpu |= rhs.cpu;
+        ret.commandstats |= rhs.commandstats;
+        ret.latencystats |= rhs.latencystats;
+        ret.sentinel |= rhs.sentinel;
+        ret.cluster |= rhs.cluster;
+        ret.modules |= rhs.modules;
+        ret.keyspace |= rhs.keyspace;
+        ret.errorstats |= rhs.errorstats;
+        ret
+    }
+}
+
+impl BitOrAssign for Info {
+    fn bitor_assign(&mut self, rhs: Self) {
+        self.default = rhs.default;
+        self.server = rhs.server;
+        self.clients = rhs.clients;
+        self.memory = rhs.memory;
+        self.persistence = rhs.persistence;
+        self.stats = rhs.stats;
+        self.replication |= rhs.replication;
+        self.cpu |= rhs.cpu;
+        self.commandstats |= rhs.commandstats;
+        self.latencystats |= rhs.latencystats;
+        self.sentinel |= rhs.sentinel;
+        self.cluster |= rhs.cluster;
+        self.modules |= rhs.modules;
+        self.keyspace |= rhs.keyspace;
+        self.errorstats |= rhs.errorstats;
+    }
+}
+
 /// Return an [`Info`] instance with all parameters mentioned in `args` set to true.
 ///
 /// # Implementation Details:
@@ -132,29 +177,29 @@ impl Info {
 ///  * Aligning with redis naming, `all` will set all *but* `modules` to true, while `everything`
 /// will set all flags, *including* `modules` to true.
 pub fn parse(args: Vec<String>) -> Result<Request, RedisProtocolError> {
-    let mut default = Info::default();
+    let mut ret = Info::new();
     if args.is_empty() {
-        Ok(Request::INFO(default))
+        Ok(Request::INFO(Info::default()))
     } else {
         for arg in args {
             match arg.to_lowercase().as_ref() {
-                "all" => return Ok(Request::INFO(Info::all())),
+                "all" => ret |= Info::all(),
                 "everything" => return Ok(Request::INFO(Info::everything())),
-                "default" => default.default = true,
-                "server" => default.server = true,
-                "clients" => default.clients = true,
-                "memory" => default.memory = true,
-                "persistence" => default.persistence = true,
-                "stats" => default.stats = true,
-                "replication" => default.replication = true,
-                "cpu" => default.cpu = true,
-                "commandstats" => default.commandstats = true,
-                "latencystats" => default.latencystats = true,
-                "sentinel" => default.sentinel = true,
-                "cluster" => default.cluster = true,
-                "modules" => default.modules = true,
-                "keyspace" => default.keyspace = true,
-                "errorstats" => default.errorstats = true,
+                "default" => ret |= Info::default(),
+                "server" => ret.server = true,
+                "clients" => ret.clients = true,
+                "memory" => ret.memory = true,
+                "persistence" => ret.persistence = true,
+                "stats" => ret.stats = true,
+                "replication" => ret.replication = true,
+                "cpu" => ret.cpu = true,
+                "commandstats" => ret.commandstats = true,
+                "latencystats" => ret.latencystats = true,
+                "sentinel" => ret.sentinel = true,
+                "cluster" => ret.cluster = true,
+                "modules" => ret.modules = true,
+                "keyspace" => ret.keyspace = true,
+                "errorstats" => ret.errorstats = true,
                 unknown => {
                     return Err(RedisProtocolError::new(
                         RedisProtocolErrorKind::Parse,
@@ -163,7 +208,7 @@ pub fn parse(args: Vec<String>) -> Result<Request, RedisProtocolError> {
                 }
             }
         }
-        Ok(Request::INFO(default))
+        Ok(Request::INFO(ret))
     }
 }
 
