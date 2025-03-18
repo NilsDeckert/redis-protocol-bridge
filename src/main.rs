@@ -1,27 +1,26 @@
 mod commands;
 mod util;
-use crate::commands::{*};
+use crate::commands::*;
 
-use log::{info, warn, error, debug};
+use log::{debug, error, info, warn};
 
 use std::net::SocketAddr;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
 
-use std::collections::HashMap;
-use std::env;
+use crate::commands::parse::Request;
 use redis_protocol::resp3::types::*;
 use redis_protocol::resp3::{decode, encode};
 use redis_protocol_bridge::parse_owned_frame;
-use crate::commands::parse::Request;
+use std::collections::HashMap;
+use std::env;
 
 /*##########################################################*/
 /*  Everything below is part of the minimal example binary  */
 /*##########################################################*/
 
-
 /// Dispatch command handlers.
-/// 
+///
 /// This method is not part of the library and would be implemented by the server itself.
 /// For redis documentation on commands see [Commands](https://redis.io/docs/latest/commands/)
 fn handle_command(query: Vec<String>, map: &mut HashMap<String, String>) -> Vec<u8> {
@@ -40,31 +39,23 @@ fn handle_command(query: Vec<String>, map: &mut HashMap<String, String>) -> Vec<
                 Request::QUIT { .. } => quit::default_handle(request),
             };
 
-            r.unwrap_or_else(|err|
-                OwnedFrame::SimpleError {
-                    data: err.details().to_string(),
-                    attributes: None
-                }
-            )
-        }
-        
-        Err(err) => {
-            OwnedFrame::SimpleError {
+            r.unwrap_or_else(|err| OwnedFrame::SimpleError {
                 data: err.details().to_string(),
-                attributes: None
-            }
+                attributes: None,
+            })
         }
+
+        Err(err) => OwnedFrame::SimpleError {
+            data: err.details().to_string(),
+            attributes: None,
+        },
     };
 
     debug!("Reply: {:#?}", reply);
 
     let mut buf: Vec<u8> = vec![0u8; reply.encode_len(false)];
-    encode::complete::encode(
-        &mut buf,
-        &reply,
-        false).expect("Failed to encode");
+    encode::complete::encode(&mut buf, &reply, false).expect("Failed to encode");
     buf
-
 }
 
 async fn handle_client(mut stream: TcpStream, addr: SocketAddr) {
@@ -122,7 +113,7 @@ fn setup_logging() {
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
     let listener = TcpListener::bind("0.0.0.0:6379").await?;
-    
+
     setup_logging();
 
     loop {

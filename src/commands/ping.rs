@@ -1,13 +1,13 @@
-use std::any::Any;
-use redis_protocol::error::RedisProtocolError;
-use redis_protocol::resp3::types::OwnedFrame;
 use crate::commands::parse::Request;
 use crate::util::convert::AsFrame;
+use redis_protocol::error::RedisProtocolError;
+use redis_protocol::resp3::types::OwnedFrame;
+use std::any::Any;
 
 /// # Implementation
-/// 
+///
 /// Merge all strings in args and return [`Request::PING`] with resulting string.
-pub fn parse(args: Vec<String>) -> Result<Request, RedisProtocolError>{
+pub fn parse(args: Vec<String>) -> Result<Request, RedisProtocolError> {
     Ok(Request::PING(args.join(" ")))
 }
 

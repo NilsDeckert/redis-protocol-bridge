@@ -1,15 +1,15 @@
-use std::collections::HashMap;
 use redis_protocol::resp3::types::OwnedFrame;
+use std::collections::HashMap;
 
-#[cfg(feature = "serde")]
-use serde::{Serialize, Serializer, Deserialize, Deserializer};
+use redis_protocol::error::RedisProtocolError;
 #[cfg(feature = "serde")]
 use redis_protocol::resp3::{decode, encode, types::Resp3Frame};
 #[cfg(feature = "serde")]
 use serde::de::{Error, Visitor};
 #[cfg(feature = "serde")]
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+#[cfg(feature = "serde")]
 use std::fmt::Formatter;
-use redis_protocol::error::RedisProtocolError;
 
 #[cfg(feature = "serde")]
 /// Wrapper around [`OwnedFrame`] that supports serialization and
@@ -20,15 +20,11 @@ pub struct SerializableFrame(pub OwnedFrame);
 impl Serialize for SerializableFrame {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: Serializer
+        S: Serializer,
     {
         let mut encoded: Vec<u8> = vec![0u8; self.0.encode_len(false)];
-        encode::complete::encode(
-            &mut encoded,
-            &self.0,
-            false).expect("Failed to encode");
+        encode::complete::encode(&mut encoded, &self.0, false).expect("Failed to encode");
         serializer.serialize_bytes(&*encoded)
-
     }
 }
 
@@ -36,7 +32,7 @@ impl Serialize for SerializableFrame {
 struct FrameVisitor;
 
 #[cfg(feature = "serde")]
-impl <'de> Visitor<'de> for FrameVisitor {
+impl<'de> Visitor<'de> for FrameVisitor {
     type Value = SerializableFrame;
 
     fn expecting(&self, formatter: &mut Formatter) -> std::fmt::Result {
@@ -45,7 +41,7 @@ impl <'de> Visitor<'de> for FrameVisitor {
 
     fn visit_bytes<E>(self, v: &[u8]) -> Result<Self::Value, E>
     where
-        E: Error
+        E: Error,
     {
         let bytes = decode::complete::decode(&v);
         if let Ok(Some((frame, _))) = bytes {
@@ -62,9 +58,7 @@ impl<'de> Deserialize<'de> for SerializableFrame {
     where
         D: Deserializer<'de>,
     {
-
         deserializer.deserialize_bytes(FrameVisitor)
-
     }
 }
 
@@ -104,7 +98,7 @@ impl AsFrame for usize {
     fn as_frame(&self) -> OwnedFrame {
         OwnedFrame::BigNumber {
             data: self.to_ne_bytes().to_vec(),
-            attributes: None
+            attributes: None,
         }
     }
 }
@@ -144,10 +138,7 @@ where
     fn as_frame(&self) -> OwnedFrame {
         let mut framemap: HashMap<OwnedFrame, OwnedFrame> = HashMap::new();
         for (key, value) in self {
-            framemap.insert(
-                key.as_frame(),
-                value.as_frame()
-            );
+            framemap.insert(key.as_frame(), value.as_frame());
         }
         OwnedFrame::Map {
             data: framemap,
@@ -198,16 +189,15 @@ mod tests {
 
         let serializable = SerializableFrame(frame.clone());
 
-        let serialized = bincode::serialize(&serializable)
-            .expect("Failed to serialize SerializableFrame");
+        let serialized =
+            bincode::serialize(&serializable).expect("Failed to serialize SerializableFrame");
 
-        let deserialized: SerializableFrame = bincode::deserialize(&serialized)
-            .expect("Failed to deserialize SerializableFrame");
+        let deserialized: SerializableFrame =
+            bincode::deserialize(&serialized).expect("Failed to deserialize SerializableFrame");
 
         // Check
         assert_eq!(deserialized.0, frame);
     }
-    
 }
 
 /*
@@ -239,7 +229,7 @@ mod tests {
     ```
 
 impl<A, B> AsFrame for (A, B)
-where 
+where
     A: AsFrame,
     B: AsFrame
 {

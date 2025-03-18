@@ -1,5 +1,5 @@
 /*! # Example
- 
+
 Open a tcp port and wait for connections:
 
 ```rust
@@ -22,7 +22,7 @@ async fn main() -> std::io::Result<()> {
  ```
 
 Read the incoming data, pass it to [`parse_owned_frame`] and then handle the command yourself
-using `handle_command`: 
+using `handle_command`:
 
 ```rust
 use tokio::net::{TcpListener, TcpStream};
@@ -59,7 +59,7 @@ async fn handle_client(mut stream: TcpStream, addr: SocketAddr) {
 }
 ```
 
-Your `handle_command` could look like this: 
+Your `handle_command` could look like this:
 
 ```rust
 fn handle_command(query: Vec<String>, map: &mut HashMap<String, String>) -> Vec<u8> {
@@ -105,8 +105,8 @@ fn handle_command(query: Vec<String>, map: &mut HashMap<String, String>) -> Vec<
 pub mod commands;
 pub mod util;
 
-use redis_protocol::resp3::types::Resp3Frame;
 use redis_protocol::resp3::types::OwnedFrame;
+use redis_protocol::resp3::types::Resp3Frame;
 
 /// Turn an incoming, potentially nested  [`OwnedFrame`] into a list of strings
 pub fn parse_owned_frame(frame: OwnedFrame) -> Vec<String> {
@@ -120,11 +120,12 @@ pub fn parse_owned_frame(frame: OwnedFrame) -> Vec<String> {
             }
         }
 
-        OwnedFrame::BlobString { data: _, attributes: _ }  => {
-            match frame.to_string() {
-                Some(content) => ret.push(content),
-                None => ret.push("ERROR".to_string())
-            }
+        OwnedFrame::BlobString {
+            data: _,
+            attributes: _,
+        } => match frame.to_string() {
+            Some(content) => ret.push(content),
+            None => ret.push("ERROR".to_string()),
         },
         _ => ret.push("No Idea".to_string()),
     }
