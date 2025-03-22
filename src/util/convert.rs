@@ -62,12 +62,14 @@ impl<'de> Deserialize<'de> for SerializableFrame {
     }
 }
 
+#[cfg(feature = "serde")]
 impl From<OwnedFrame> for SerializableFrame {
     fn from(frame: OwnedFrame) -> Self {
         SerializableFrame(frame)
     }
 }
 
+#[cfg(feature = "serde")]
 impl From<SerializableFrame> for OwnedFrame {
     fn from(frame: SerializableFrame) -> Self {
         frame.0
