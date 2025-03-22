@@ -96,10 +96,28 @@ impl AsFrame for i64 {
     }
 }
 
+impl AsFrame for i32 {
+    fn as_frame(&self) -> OwnedFrame {
+        OwnedFrame::Number {
+            data: *self as i64,
+            attributes: None,
+        }
+    }
+}
+
 impl AsFrame for usize {
     fn as_frame(&self) -> OwnedFrame {
         OwnedFrame::BigNumber {
             data: self.to_ne_bytes().to_vec(),
+            attributes: None,
+        }
+    }
+}
+
+impl AsFrame for u16 {
+    fn as_frame(&self) -> OwnedFrame {
+        OwnedFrame::Number {
+            data: *self as i64,
             attributes: None,
         }
     }
@@ -123,12 +141,24 @@ impl AsFrame for str {
     }
 }
 
+impl AsFrame for &str {
+    fn as_frame(&self) -> OwnedFrame {
+        (*self).as_frame()
+    }
+}
+
 impl AsFrame for RedisProtocolError {
     fn as_frame(&self) -> OwnedFrame {
         OwnedFrame::SimpleError {
             data: self.to_string(),
             attributes: None,
         }
+    }
+}
+
+impl AsFrame for OwnedFrame {
+    fn as_frame(&self) -> OwnedFrame {
+        self.clone()
     }
 }
 
@@ -174,6 +204,11 @@ impl<T: AsFrame + Clone> AsFrame for Vec<(T, T)> {
 
         intermediate.as_frame()
     }
+}
+
+pub fn map_to_array<T: AsFrame + Clone>(map: HashMap<T, T>) -> OwnedFrame {
+    let arr: Vec<(T, T)> = map.into_iter().map(|(k, v)| (k, v)).collect();
+    arr.as_frame()
 }
 
 #[cfg(test)]

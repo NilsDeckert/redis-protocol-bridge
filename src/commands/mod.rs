@@ -35,3 +35,6 @@ pub mod select;
 
 /// QUIT
 pub mod quit;
+
+/// CLUSTER [SHARDS, INFO, ...]
+pub mod cluster;

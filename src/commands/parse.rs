@@ -2,6 +2,7 @@ use crate::commands::command::Command;
 use crate::commands::info::Info;
 use crate::commands::*;
 use redis_protocol::error::{RedisProtocolError, RedisProtocolErrorKind};
+use crate::commands::cluster::Cluster;
 
 /// Wrapper for supported commands
 #[derive(Debug, Clone)]
@@ -25,6 +26,7 @@ pub enum Request {
     PING(String),
     SELECT(u64),
     QUIT,
+    CLUSTER(Cluster)
 }
 
 /// Parse incoming commands
@@ -43,6 +45,7 @@ pub fn parse(mut query: Vec<String>) -> Result<Request, RedisProtocolError> {
             "PING" => ping::parse(args),
             "SELECT" => select::parse(args),
             "QUIT" => quit::parse(args),
+            "CLUSTER" => cluster::parse(args),
 
             _ => Err(RedisProtocolError::new(
                 RedisProtocolErrorKind::Parse,

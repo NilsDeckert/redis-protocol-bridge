@@ -29,7 +29,7 @@ pub fn parse(args: Vec<String>) -> Result<Request, RedisProtocolError> {
     }
 }
 
-/// Default reply to SET: "Ok
+/// Default reply to SET: "Ok"
 #[allow(dead_code)]
 pub fn default_handle(args: Request) -> Result<OwnedFrame, RedisProtocolError> {
     {
