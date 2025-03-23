@@ -13,6 +13,7 @@ pub enum Cluster {
     INFO,
     SHARDS,
     NODES,
+    SLOTS,
 }
 
 pub fn parse(args: Vec<String>) -> Result<Request, RedisProtocolError> {
@@ -45,6 +46,12 @@ pub fn parse(args: Vec<String>) -> Result<Request, RedisProtocolError> {
             }
             Ok(Request::CLUSTER(Cluster::NODES))
         }
+        "SLOTS" => {
+            if iter.next().is_some() {
+                return Err(error_too_many_arguments("CLUSTER SLOTS"));
+            }
+            Ok(Request::CLUSTER(Cluster::SLOTS))
+        }
         unknown => Err(RedisProtocolError::new(
             RedisProtocolErrorKind::Parse,
             format!("Unsupported command: CLUSTER {unknown}"),
@@ -59,6 +66,7 @@ pub fn default_handle(args: Request) -> Result<OwnedFrame, RedisProtocolError> {
             Cluster::SHARDS => default_handle_shards(),
             Cluster::INFO => default_handle_info(),
             Cluster::NODES => default_handle_nodes(),
+            Cluster::SLOTS => default_handle_slots(),
         }
     } else {
         panic!("Expected enum variant CLUSTER but got {:?}", args.type_id())
@@ -135,6 +143,22 @@ fn default_values_nodes() -> Vec<OwnedFrame> {
 
 fn default_handle_nodes() -> Result<OwnedFrame, RedisProtocolError> {
     Ok("myid 127.0.0.1:3769@3769,- myself,master - 0 0 1 connected 0-16384\r\n".as_frame())
+}
+
+fn default_handle_slots() -> Result<OwnedFrame, RedisProtocolError> {
+    let mut ranges = vec![];
+    let this_range = vec![
+        0.as_frame(),
+        REDIS_CLUSTER_SLOTS.as_frame(),
+        vec![
+            "127.0.0.1".as_frame(),
+            "3769".as_frame(),
+            "my-id".as_frame(),
+        ]
+        .as_frame(),
+    ];
+    ranges.push(this_range.as_frame());
+    Ok(ranges.as_frame())
 }
 
 fn default_handle_info() -> Result<OwnedFrame, RedisProtocolError> {
