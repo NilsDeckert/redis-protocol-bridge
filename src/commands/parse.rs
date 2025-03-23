@@ -49,7 +49,7 @@ pub fn parse(mut query: Vec<String>) -> Result<Request, RedisProtocolError> {
 
             _ => Err(RedisProtocolError::new(
                 RedisProtocolErrorKind::Parse,
-                format!("Unsupported command: {}", command),
+                format!("Unsupported command: {command} {}", args.join(" ")),
             )),
         }
     } else {
