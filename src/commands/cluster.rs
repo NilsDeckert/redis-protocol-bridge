@@ -1,17 +1,18 @@
 use crate::commands::parse::Request;
+use crate::util::convert::map_to_array;
 use crate::util::convert::AsFrame;
 use redis_protocol::error::{RedisProtocolError, RedisProtocolErrorKind};
 use redis_protocol::resp3::types::OwnedFrame;
 use redis_protocol::types::REDIS_CLUSTER_SLOTS;
 use std::any::Any;
 use std::collections::HashMap;
-use crate::util::convert::map_to_array;
 
 #[derive(Clone, Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Cluster {
     INFO,
     SHARDS,
+    NODES,
 }
 
 pub fn parse(args: Vec<String>) -> Result<Request, RedisProtocolError> {
@@ -38,6 +39,12 @@ pub fn parse(args: Vec<String>) -> Result<Request, RedisProtocolError> {
             }
             Ok(Request::CLUSTER(Cluster::INFO))
         }
+        "NODES" => {
+            if iter.next().is_some() {
+                return Err(error_too_many_arguments("CLUSTER NODES"));
+            }
+            Ok(Request::CLUSTER(Cluster::NODES))
+        }
         unknown => Err(RedisProtocolError::new(
             RedisProtocolErrorKind::Parse,
             format!("Unsupported command: CLUSTER {unknown}"),
@@ -51,6 +58,7 @@ pub fn default_handle(args: Request) -> Result<OwnedFrame, RedisProtocolError> {
         match subcommand {
             Cluster::SHARDS => default_handle_shards(),
             Cluster::INFO => default_handle_info(),
+            Cluster::NODES => default_handle_nodes(),
         }
     } else {
         panic!("Expected enum variant CLUSTER but got {:?}", args.type_id())
@@ -67,10 +75,10 @@ fn error_too_many_arguments(command: &str) -> RedisProtocolError {
 
 ///
 /// # Returns
-/// 
+///
 /// A list of shards with each shard being a list of nodes and
 /// a list of HashSlots they serve.
-/// 
+///
 /// ```
 /// |-----------------------------------------------|
 /// | 1)    |-----------------------------------|   |
@@ -113,16 +121,20 @@ pub fn cluster_slots(slots: Vec<(u16, u16)>) -> Vec<OwnedFrame> {
 }
 
 fn default_values_nodes() -> Vec<OwnedFrame> {
-    let mut all_nodes = vec!();
+    let mut all_nodes = vec![];
     let value_map = HashMap::from([
         ("id", "defaultId"),
         ("endpoint", "127.0.0.1"),
         ("ip", "127.0.0.1"),
-        ("port", "3769")
+        ("port", "3769"),
     ]);
-    
+
     all_nodes.push(map_to_array(value_map));
     all_nodes
+}
+
+fn default_handle_nodes() -> Result<OwnedFrame, RedisProtocolError> {
+    Ok("myid 127.0.0.1:3769@3769,- myself,master - 0 0 1 connected 0-16384\r\n".as_frame())
 }
 
 fn default_handle_info() -> Result<OwnedFrame, RedisProtocolError> {

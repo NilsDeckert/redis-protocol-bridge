@@ -122,7 +122,7 @@ impl Info {
 
 impl BitOr for Info {
     type Output = Self;
-    
+
     fn bitor(self, rhs: Self) -> Self {
         let mut ret = self.clone();
         ret.default = rhs.default;

@@ -1,8 +1,8 @@
+use crate::commands::cluster::Cluster;
 use crate::commands::command::Command;
 use crate::commands::info::Info;
 use crate::commands::*;
 use redis_protocol::error::{RedisProtocolError, RedisProtocolErrorKind};
-use crate::commands::cluster::Cluster;
 
 /// Wrapper for supported commands
 #[derive(Debug, Clone)]
@@ -26,7 +26,7 @@ pub enum Request {
     PING(String),
     SELECT(u64),
     QUIT,
-    CLUSTER(Cluster)
+    CLUSTER(Cluster),
 }
 
 /// Parse incoming commands
