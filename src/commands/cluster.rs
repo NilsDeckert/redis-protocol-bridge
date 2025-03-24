@@ -1,6 +1,7 @@
 use crate::commands::parse::Request;
 use crate::util::convert::map_to_array;
 use crate::util::convert::AsFrame;
+use crate::util::errors;
 use redis_protocol::error::{RedisProtocolError, RedisProtocolErrorKind};
 use redis_protocol::resp3::types::OwnedFrame;
 use redis_protocol::types::REDIS_CLUSTER_SLOTS;
@@ -29,26 +30,26 @@ pub fn parse(args: Vec<String>) -> Result<Request, RedisProtocolError> {
     match subcommand.unwrap().to_uppercase().as_str() {
         "SHARDS" => {
             if iter.next().is_some() {
-                return Err(error_too_many_arguments("CLUSTER SHARDS"));
+                return Err(errors::error_too_many_arguments("CLUSTER SHARDS"));
             }
 
             Ok(Request::CLUSTER(Cluster::SHARDS))
         }
         "INFO" => {
             if iter.next().is_some() {
-                return Err(error_too_many_arguments("CLUSTER INFO"));
+                return Err(errors::error_too_many_arguments("CLUSTER INFO"));
             }
             Ok(Request::CLUSTER(Cluster::INFO))
         }
         "NODES" => {
             if iter.next().is_some() {
-                return Err(error_too_many_arguments("CLUSTER NODES"));
+                return Err(errors::error_too_many_arguments("CLUSTER NODES"));
             }
             Ok(Request::CLUSTER(Cluster::NODES))
         }
         "SLOTS" => {
             if iter.next().is_some() {
-                return Err(error_too_many_arguments("CLUSTER SLOTS"));
+                return Err(errors::error_too_many_arguments("CLUSTER SLOTS"));
             }
             Ok(Request::CLUSTER(Cluster::SLOTS))
         }
@@ -71,14 +72,6 @@ pub fn default_handle(args: Request) -> Result<OwnedFrame, RedisProtocolError> {
     } else {
         panic!("Expected enum variant CLUSTER but got {:?}", args.type_id())
     }
-}
-
-/// Shorthand to return default error if user supplied more arguments than expected
-fn error_too_many_arguments(command: &str) -> RedisProtocolError {
-    RedisProtocolError::new(
-        RedisProtocolErrorKind::Parse,
-        format!("{command} does not take additional arguments"),
-    )
 }
 
 ///

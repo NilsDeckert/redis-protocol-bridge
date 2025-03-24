@@ -1,5 +1,6 @@
 use crate::commands::cluster::Cluster;
 use crate::commands::command::Command;
+use crate::commands::config::Config;
 use crate::commands::info::Info;
 use crate::commands::*;
 use redis_protocol::error::{RedisProtocolError, RedisProtocolErrorKind};
@@ -27,6 +28,7 @@ pub enum Request {
     SELECT(u64),
     QUIT,
     CLUSTER(Cluster),
+    CONFIG(Config),
 }
 
 /// Parse incoming commands
@@ -46,6 +48,7 @@ pub fn parse(mut query: Vec<String>) -> Result<Request, RedisProtocolError> {
             "SELECT" => select::parse(args),
             "QUIT" => quit::parse(args),
             "CLUSTER" => cluster::parse(args),
+            "CONFIG" => config::parse(args),
 
             _ => Err(RedisProtocolError::new(
                 RedisProtocolErrorKind::Parse,

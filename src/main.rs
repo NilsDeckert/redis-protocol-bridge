@@ -8,13 +8,13 @@ use std::net::SocketAddr;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
 
+use crate::commands::config;
 use crate::commands::parse::Request;
 use redis_protocol::resp3::types::*;
 use redis_protocol::resp3::{decode, encode};
 use redis_protocol_bridge::parse_owned_frame;
 use std::collections::HashMap;
 use std::env;
-
 /*##########################################################*/
 /*  Everything below is part of the minimal example binary  */
 /*##########################################################*/
@@ -38,6 +38,7 @@ fn handle_command(query: Vec<String>, map: &mut HashMap<String, String>) -> Vec<
                 Request::SELECT { .. } => select::default_handle(request),
                 Request::QUIT { .. } => quit::default_handle(request),
                 Request::CLUSTER { .. } => cluster::default_handle(request),
+                Request::CONFIG { .. } => config::default_handle(request),
             };
 
             r.unwrap_or_else(|err| OwnedFrame::SimpleError {

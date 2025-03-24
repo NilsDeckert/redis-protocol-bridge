@@ -38,3 +38,4 @@ pub mod quit;
 
 /// CLUSTER [SHARDS, INFO, ...]
 pub mod cluster;
+pub mod config;
