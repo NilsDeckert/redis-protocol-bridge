@@ -1,5 +1,5 @@
 use crate::commands::parse::Request;
-use crate::util::convert::map_to_array;
+use crate::util::convert::{map_to_array, AsFrame};
 use crate::util::errors::{error_too_few_arguments, error_unsupported_command};
 use redis_protocol::error::RedisProtocolError;
 use redis_protocol::resp3::types::OwnedFrame;
@@ -17,11 +17,15 @@ pub enum Config {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ConfigGet {
     pub save: bool,
+    pub appendonly: bool,
 }
 
 impl ConfigGet {
     pub fn new() -> Self {
-        Self { save: false }
+        Self {
+            save: false,
+            appendonly: false,
+        }
     }
 }
 
@@ -45,6 +49,7 @@ fn parse_config_get(args: &[String]) -> Result<Request, RedisProtocolError> {
     for arg in args {
         match arg.to_lowercase().as_ref() {
             "save" => config.save = true,
+            "appendonly" => config.appendonly = true,
             unknown => {
                 return Err(error_unsupported_command(
                     &*("CONFIG GET ".to_owned() + unknown),
@@ -68,10 +73,14 @@ pub fn default_handle(args: Request) -> Result<OwnedFrame, RedisProtocolError> {
 
 pub fn default_handle_config_get(args: ConfigGet) -> Result<OwnedFrame, RedisProtocolError> {
     let mut config_map: HashMap<&str, &str> = HashMap::new();
-
+    
     if args.save {
         config_map.insert("save", "");
     }
-
+    
+    if args.appendonly {
+        config_map.insert("appendonly", "no");
+    }
+    
     Ok(map_to_array(config_map))
 }
