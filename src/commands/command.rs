@@ -45,7 +45,7 @@ pub fn parse(mut args: Vec<String>) -> Result<Request, RedisProtocolError> {
     ret
 }
 
-pub fn default_handle(args: Request) -> Result<OwnedFrame, RedisProtocolError> {
+pub fn default_handle(args: &Request) -> Result<OwnedFrame, RedisProtocolError> {
     let mut command_info: HashMap<String, Vec<(String, String)>> = HashMap::new();
     command_info.insert(
         "GET".into(),
@@ -56,19 +56,19 @@ pub fn default_handle(args: Request) -> Result<OwnedFrame, RedisProtocolError> {
         vec![("summary".into(), "Session init".into())],
     );
 
-    handle(command_info, args)
+    handle(command_info, &args)
 }
 
 pub fn handle(
     values: HashMap<String, Vec<(String, String)>>,
-    args: Request,
+    args: &Request,
 ) -> Result<OwnedFrame, RedisProtocolError> {
     if let COMMAND(cmd) = args {
         match cmd {
             CMD => handle_cmd(values),
             COUNT => handle_count(values),
-            DOCS(args) => handle_docs(values, args),
-            INFO(args) => handle_docs(values, args),
+            DOCS(args) => handle_docs(values, &args),
+            INFO(args) => handle_docs(values, &args),
             LIST => handle_list(values),
         }
     } else {
@@ -94,7 +94,7 @@ fn handle_cmd(
 /// ```
 fn handle_docs(
     values: HashMap<String, Vec<(String, String)>>,
-    args: Vec<String>,
+    args: &Vec<String>,
 ) -> Result<OwnedFrame, RedisProtocolError> {
     /* For COMMAND DOCS, return info for all commands */
     if args.is_empty() {
@@ -104,7 +104,7 @@ fn handle_docs(
     let mut intermediate: Vec<OwnedFrame> = Vec::new();
     for command in args {
         intermediate.push(command.as_frame());
-        if let Some(v) = values.get(&command) {
+        if let Some(v) = values.get(command) {
             intermediate.push(v.as_frame())
         } // If command is unknown, just don't include it in return
     }

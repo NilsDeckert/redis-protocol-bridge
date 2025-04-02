@@ -31,7 +31,7 @@ pub fn default_handle(args: Request) -> Result<OwnedFrame, RedisProtocolError> {
     let default_values: HashMap<String, String> =
         HashMap::from([("mykey".into(), "myvalue".into())]);
 
-    handle(&default_values, args)
+    handle(&default_values, &args)
 }
 
 /// Handle redis GET requests.
@@ -46,7 +46,7 @@ pub fn default_handle(args: Request) -> Result<OwnedFrame, RedisProtocolError> {
 /// not inside `values`
 pub fn handle<V: AsFrame + Clone>(
     values: &HashMap<String, V>,
-    args: Request,
+    args: &Request,
 ) -> Result<OwnedFrame, RedisProtocolError> {
     if let Request::GET { ref key } = args {
         if let Some(value) = values.get(key) {

@@ -61,7 +61,7 @@ pub fn parse(args: Vec<String>) -> Result<Request, RedisProtocolError> {
 }
 
 /// Dispatcher for the default handles of the CLUSTER subcommands.
-pub fn default_handle(args: Request) -> Result<OwnedFrame, RedisProtocolError> {
+pub fn default_handle(args: &Request) -> Result<OwnedFrame, RedisProtocolError> {
     if let Request::CLUSTER(subcommand) = args {
         match subcommand {
             Cluster::SHARDS => default_handle_shards(),

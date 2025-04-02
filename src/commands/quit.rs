@@ -19,7 +19,7 @@ pub fn parse(args: Vec<String>) -> Result<Request, RedisProtocolError> {
 }
 
 /// Return "OK"
-pub fn default_handle(args: Request) -> Result<OwnedFrame, RedisProtocolError> {
+pub fn default_handle(args: &Request) -> Result<OwnedFrame, RedisProtocolError> {
     if let Request::QUIT = args {
         Ok("OK".as_frame())
     } else {

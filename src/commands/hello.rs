@@ -27,7 +27,7 @@ impl AsFrame for Property {
 
 /// Handle `HELLO` requests with a default set of properties.
 /// See [`handle`]
-pub fn default_handle(args: Request) -> Result<OwnedFrame, RedisProtocolError> {
+pub fn default_handle(args: &Request) -> Result<OwnedFrame, RedisProtocolError> {
     debug!("Providing default properties to handle HELLO");
     let default_values = HashMap::from([
         ("server".into(), Property::String("RRedis".into())),
@@ -103,15 +103,15 @@ pub fn parse(args: Vec<String>) -> Result<Request, RedisProtocolError> {
 ///
 pub fn handle(
     values: &HashMap<String, Property>,
-    args: Request,
+    args: &Request,
 ) -> Result<OwnedFrame, RedisProtocolError> {
     debug!("Handling HELLO with provided properties");
     let default_version = String::from("3");
     match args {
         Request::HELLO { version, .. } => {
             // TODO: Use other parsed args
-            let v: String = version.unwrap_or(default_version);
-            if "3".eq(&v) {
+            let v: &String = version.as_ref().unwrap_or(&default_version);
+            if "3".eq(v) {
                 Ok(values.as_frame())
             } else {
                 error!("Client asked for unsupported protocol version {}", v);

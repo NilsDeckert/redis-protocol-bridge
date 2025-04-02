@@ -25,9 +25,9 @@ pub fn parse(args: Vec<String>) -> Result<Request, RedisProtocolError> {
 }
 
 /// Return `Ok` if requested database index is 0. Return Error otherwise.
-pub fn default_handle(args: Request) -> Result<OwnedFrame, RedisProtocolError> {
+pub fn default_handle(args: &Request) -> Result<OwnedFrame, RedisProtocolError> {
     if let Request::SELECT(db) = args {
-        return if db == 0 {
+        return if db.eq(&0) {
             Ok("Ok".as_frame())
         } else {
             Err(RedisProtocolError::new(

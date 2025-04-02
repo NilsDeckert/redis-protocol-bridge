@@ -1,5 +1,5 @@
 use crate::commands::parse::Request;
-use crate::util::convert::{map_to_array, AsFrame};
+use crate::util::convert::map_to_array;
 use crate::util::errors::{error_too_few_arguments, error_unsupported_command};
 use redis_protocol::error::RedisProtocolError;
 use redis_protocol::resp3::types::OwnedFrame;
@@ -61,7 +61,7 @@ fn parse_config_get(args: &[String]) -> Result<Request, RedisProtocolError> {
     Ok(Request::CONFIG(Config::Get(config)))
 }
 
-pub fn default_handle(args: Request) -> Result<OwnedFrame, RedisProtocolError> {
+pub fn default_handle(args: &Request) -> Result<OwnedFrame, RedisProtocolError> {
     if let Request::CONFIG(subcommand) = args {
         match subcommand {
             Config::Get(get) => default_handle_config_get(get),
@@ -71,7 +71,7 @@ pub fn default_handle(args: Request) -> Result<OwnedFrame, RedisProtocolError> {
     }
 }
 
-pub fn default_handle_config_get(args: ConfigGet) -> Result<OwnedFrame, RedisProtocolError> {
+pub fn default_handle_config_get(args: &ConfigGet) -> Result<OwnedFrame, RedisProtocolError> {
     let mut config_map: HashMap<&str, &str> = HashMap::new();
     
     if args.save {

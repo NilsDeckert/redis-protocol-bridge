@@ -213,7 +213,7 @@ pub fn parse(args: Vec<String>) -> Result<Request, RedisProtocolError> {
 }
 
 /// Ignore passed args and return an empty HashMap
-pub fn default_handle(args: Request) -> Result<OwnedFrame, RedisProtocolError> {
+pub fn default_handle(args: &Request) -> Result<OwnedFrame, RedisProtocolError> {
     if let Request::INFO(_) = args {
         let empty: HashMap<String, String> = HashMap::new();
         Ok(empty.as_frame())

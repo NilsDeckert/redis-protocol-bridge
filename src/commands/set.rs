@@ -34,7 +34,7 @@ pub fn parse(args: Vec<String>) -> Result<Request, RedisProtocolError> {
 pub fn default_handle(args: Request) -> Result<OwnedFrame, RedisProtocolError> {
     {
         let mut dummy: HashMap<String, String> = HashMap::new();
-        handle(&mut dummy, args)
+        handle(&mut dummy, &args)
     }
 }
 
@@ -46,10 +46,10 @@ pub fn default_handle(args: Request) -> Result<OwnedFrame, RedisProtocolError> {
 /// Rusts `.insert()` also returns the previous value, so it would be easy to do.
 pub fn handle(
     values: &mut HashMap<String, String>,
-    args: Request,
+    args: &Request,
 ) -> Result<OwnedFrame, RedisProtocolError> {
     if let Request::SET { key, value } = args {
-        values.insert(key, value);
+        values.insert(key.to_owned(), value.to_owned());
         return Ok("Ok".as_frame());
     }
 

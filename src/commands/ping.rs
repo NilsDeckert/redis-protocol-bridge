@@ -12,9 +12,9 @@ pub fn parse(args: Vec<String>) -> Result<Request, RedisProtocolError> {
 }
 
 /// Return passed string.
-pub fn default_handle(args: Request) -> Result<OwnedFrame, RedisProtocolError> {
+pub fn default_handle(args: &Request) -> Result<OwnedFrame, RedisProtocolError> {
     if let Request::PING(message) = args {
-        if message == "" {
+        if message.is_empty() {
             Ok("PONG".as_frame())
         } else {
             Ok(message.as_frame())
