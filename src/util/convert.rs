@@ -132,6 +132,12 @@ impl AsFrame for String {
     }
 }
 
+impl AsFrame for &String {
+    fn as_frame(&self) -> OwnedFrame {
+        self.as_str().as_frame()
+    }
+}
+
 impl AsFrame for str {
     fn as_frame(&self) -> OwnedFrame {
         OwnedFrame::BlobString {

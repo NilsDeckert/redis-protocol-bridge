@@ -119,7 +119,7 @@ fn handle_docs(
 fn handle_list(
     values: HashMap<String, Vec<(String, String)>>,
 ) -> Result<OwnedFrame, RedisProtocolError> {
-    let keys: Vec<String> = values.keys().cloned().collect();
+    let keys: Vec<&String> = values.keys().collect();
     Ok(keys.as_frame())
 }
 
