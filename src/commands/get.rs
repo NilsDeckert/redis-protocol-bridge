@@ -43,16 +43,16 @@ pub fn default_handle(args: Request) -> Result<OwnedFrame, RedisProtocolError> {
 ///
 /// # Returns
 ///  * [`OwnedFrame`] containing the value for the given key or [`OwnedFrame::Null`] if the key is
-/// not inside `values`
+///     not inside `values`
 pub fn handle<V: AsFrame + Clone>(
     values: &HashMap<String, V>,
     args: &Request,
 ) -> Result<OwnedFrame, RedisProtocolError> {
     if let Request::GET { ref key } = args {
         if let Some(value) = values.get(key) {
-            return Ok(value.as_frame());
+            Ok(value.as_frame())
         } else {
-            return Ok(OwnedFrame::Null);
+            Ok(OwnedFrame::Null)
         }
     } else {
         panic!("Expected enum variant GET, but got {:?}", args.type_id())

@@ -12,7 +12,7 @@ pub fn parse(args: Vec<String>) -> Result<Request, RedisProtocolError> {
         ));
     }
 
-    if let Some(arg) = args.get(0) {
+    if let Some(arg) = args.first() {
         if let Ok(number) = arg.parse::<u64>() {
             return Ok(Request::SELECT(number));
         }

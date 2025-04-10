@@ -79,7 +79,7 @@ async fn handle_client(mut stream: TcpStream, addr: SocketAddr) {
             }
         };
 
-        let res_op = decode::complete::decode(&mut buf);
+        let res_op = decode::complete::decode(&buf);
         match res_op {
             Ok(Some((frame, _size))) => {
                 let query = parse_owned_frame(frame);

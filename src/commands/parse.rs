@@ -37,7 +37,7 @@ pub enum Request {
 /// Result<[`Request`], [`RedisProtocolError`]>
 pub fn parse(mut query: Vec<String>) -> Result<Request, RedisProtocolError> {
     let args = query.split_off(1);
-    if let Some(command) = query.get(0) {
+    if let Some(command) = query.first() {
         match command.to_uppercase().as_ref() {
             "HELLO" => hello::parse(args),
             "GET" => get::parse(args),

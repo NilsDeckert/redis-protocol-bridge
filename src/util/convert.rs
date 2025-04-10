@@ -213,7 +213,7 @@ impl<T: AsFrame + Clone> AsFrame for Vec<(T, T)> {
 }
 
 pub fn map_to_array<T: AsFrame + Clone>(map: HashMap<T, T>) -> OwnedFrame {
-    let arr: Vec<(T, T)> = map.into_iter().map(|(k, v)| (k, v)).collect();
+    let arr: Vec<(T, T)> = map.into_iter().collect();
     arr.as_frame()
 }
 

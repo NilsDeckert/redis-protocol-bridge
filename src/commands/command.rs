@@ -56,7 +56,7 @@ pub fn default_handle(args: &Request) -> Result<OwnedFrame, RedisProtocolError> 
         vec![("summary".into(), "Session init".into())],
     );
 
-    handle(command_info, &args)
+    handle(command_info, args)
 }
 
 pub fn handle(
@@ -67,8 +67,8 @@ pub fn handle(
         match cmd {
             CMD => handle_cmd(values),
             COUNT => handle_count(values),
-            DOCS(args) => handle_docs(values, &args),
-            INFO(args) => handle_docs(values, &args),
+            DOCS(args) => handle_docs(values, args),
+            INFO(args) => handle_docs(values, args),
             LIST => handle_list(values),
         }
     } else {

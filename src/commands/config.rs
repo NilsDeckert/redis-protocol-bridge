@@ -52,7 +52,7 @@ fn parse_config_get(args: &[String]) -> Result<Request, RedisProtocolError> {
             "appendonly" => config.appendonly = true,
             unknown => {
                 return Err(error_unsupported_command(
-                    &*("CONFIG GET ".to_owned() + unknown),
+                    &("CONFIG GET ".to_owned() + unknown),
                 ))
             }
         }

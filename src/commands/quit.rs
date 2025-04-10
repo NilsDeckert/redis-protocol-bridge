@@ -8,7 +8,7 @@ use std::any::Any;
 ///
 /// Ensure args is empty, then return [`Request::QUIT`]
 pub fn parse(args: Vec<String>) -> Result<Request, RedisProtocolError> {
-    if args.len() != 0 {
+    if !args.is_empty() {
         Err(RedisProtocolError::new(
             RedisProtocolErrorKind::Parse,
             "This command does not accept any arguments",
